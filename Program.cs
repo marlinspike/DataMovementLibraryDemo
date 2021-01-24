@@ -45,9 +45,14 @@ namespace DataMovementLibrary {
         }
 
         public static string GetSourcePath() {
+            string sourcePath = Program.getInstance().config.GetValue<String>("SourceFilePath"); //Console.ReadLine();
+            Console.WriteLine($"Reading from source: {sourcePath}");
+            return sourcePath;
+        }
+
+        public static string GetSourceDirPath() {
             string sourcePath = Program.getInstance().config.GetValue<String>("SourceDirPath"); //Console.ReadLine();
             Console.WriteLine($"Reading from source: {sourcePath}");
-
             return sourcePath;
         }
 
@@ -76,15 +81,26 @@ namespace DataMovementLibrary {
             Console.WriteLine("Please enter selection");
         }
         public static void ExecuteChoice(CloudStorageAccount account) {
+            SetNumberOfParallelOperations();
             printDefaultInstructions();
             string input = Console.ReadLine().ToUpper();
             while ((input != "")) {
                 switch (input.Trim()) {
                     case "1":
-                        TransferLocalFileToAzureBlob(account).Wait();
+                        try {
+                            TransferLocalFileToAzureBlob(account).Wait();
+                        }catch(Exception e) {
+                            Console.WriteLine(e);
+                        }
+                        
                         break;
                     case "2":
-                        TransferLocalDirectoryToAzureBlobDirectory(account).Wait();
+                        try {
+                            TransferLocalDirectoryToAzureBlobDirectory(account).Wait();
+                        }catch(Exception e) {
+                            Console.WriteLine(e);
+                        }
+                        
                         break;
                     case "3":
                         TransferAzureBlobToAzureBlob(account).Wait();
@@ -99,9 +115,11 @@ namespace DataMovementLibrary {
         public static void SetNumberOfParallelOperations() {
             Program p = Program.getInstance();
             string parallelOperations = p.config.GetValue<String>("ParallelOperations");
+            string blockSize = p.config.GetValue<String>("BlockSize");
             Console.WriteLine($"Using {parallelOperations} Parallel Operations...");
          
             TransferManager.Configurations.ParallelOperations = int.Parse(parallelOperations);
+            TransferManager.Configurations.BlockSize = int.Parse(blockSize);
         }
 
         //Upload a local file to Azure Blob Storage
@@ -139,7 +157,7 @@ namespace DataMovementLibrary {
 
         //Transfer a local directory to Azure
         public static async Task TransferLocalDirectoryToAzureBlobDirectory(CloudStorageAccount account) {
-            string localDirectoryPath = GetSourcePath();
+            string localDirectoryPath = GetSourceDirPath();
             CloudBlobDirectory blobDirectory = GetBlobDirectory(account);
             TransferCheckpoint checkpoint = null;
             DirectoryTransferContext context = GetDirectoryTransferContext(checkpoint);
@@ -234,6 +252,7 @@ namespace DataMovementLibrary {
         //Used to track Transfer of a Single File
         public static SingleTransferContext GetSingleTransferContext(TransferCheckpoint checkpoint) {
             SingleTransferContext context = new SingleTransferContext(checkpoint);
+            context.ShouldOverwriteCallbackAsync = TransferContext.ForceOverwrite;
 
             context.ProgressHandler = new Progress<TransferStatus>((progress) =>
             {
