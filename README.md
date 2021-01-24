@@ -7,7 +7,7 @@ retry/backoff features you'd imagine, DML adds some advanced features, like sett
 - Follow the instructions below to add a file called *appsettings.json* to the root directory
 
 ## Appsettings.json File
-`
+
 {
   "StorageAccount": "<STORAGE_ACCOUNT_NAME_HERE>",
   "StorageKey": "<YOUR_KEY_HERE>",
@@ -17,4 +17,4 @@ retry/backoff features you'd imagine, DML adds some advanced features, like sett
   "TargetContainer": "upload",
   "ParallelOperations": 8
 
-}`
+}
