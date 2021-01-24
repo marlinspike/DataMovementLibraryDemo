@@ -7,6 +7,8 @@ retry/backoff features you'd imagine, DML adds some advanced features, like sett
 - Follow the instructions below to add a file called *appsettings.json* to the root directory
 
 ## Appsettings.json File
+This file is **mandatory** to have in your root folder. Please remember to set this file to *Copy Always* into your Output (build) directory.
+
 ```json
 {
   "StorageAccount": "<STORAGE_ACCOUNT_NAME_HERE>",
